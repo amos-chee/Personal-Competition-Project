@@ -13,12 +13,11 @@ A small real-time crowd-voting web app. Visitors pick their favorite entry, an a
 
 ## Run it
 
+**Quick start (demo):** clone the repo and open `vote.html`, `vote-admin.html` or `vote-results.html` in a browser. `constants.js` already points at the demo Firebase project, and the admin PIN is `1234`.
+
+**Use your own Firebase project:**
 1. Create a Firebase project with a **Realtime Database**, and add a **Web app** to get its config.
-2. Copy the template and fill in your values:
-   ```
-   cp constants.example.js constants.js
-   ```
-   Set `FIREBASE_CONFIG`, `VOTING_ADMIN_PIN`, `competitionName` and the seed `entries`. `constants.js` is git-ignored, so your config is not committed.
+2. Edit `constants.js` (`constants.example.js` is a blank template): set `FIREBASE_CONFIG`, `VOTING_ADMIN_PIN`, `competitionName` and the seed `entries`.
 3. Paste `database.rules.json` into **Realtime Database → Rules**.
 4. Open `vote-admin.html` in a browser, enter the PIN, and open voting. Voters use `vote.html`, and `vote-results.html` shows the live tally.
 
@@ -45,7 +44,8 @@ This is a demo-grade project with a known limitation. The admin PIN is checked i
 
 ```
 vote*.html / vote*-script.js / vote*-styles.css   the three pages
-constants.example.js                              config template (copy to constants.js)
+constants.js                                      demo config (Firebase project, admin PIN)
+constants.example.js                              blank config template
 database.rules.json                               Realtime Database rules
 firebase.json, .firebaserc                        Firebase Hosting config
 ```
