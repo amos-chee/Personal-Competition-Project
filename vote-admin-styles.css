@@ -204,6 +204,16 @@ body {
   color: #374151;
 }
 
+/* Fields have a label above the input, so line the buttons up with the inputs */
+.cycle-row--schedule { align-items: flex-end; }
+
+/* Give the inputs and buttons the same height, since their padding and borders differ */
+.cycle-row--schedule .schedule-datetime,
+.cycle-row--schedule .btn {
+  box-sizing: border-box;
+  height: 2.7rem;
+}
+
 .schedule-field {
   display: flex;
   flex-direction: column;
