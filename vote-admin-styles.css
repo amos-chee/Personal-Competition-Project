@@ -12,8 +12,8 @@ body {
   min-height: 100vh;
 }
 
-/* ── PIN Overlay ──────────────────────────────────────────── */
-.pin-overlay {
+/* ── Login Overlay ────────────────────────────────────────── */
+.login-overlay {
   position: fixed;
   inset: 0;
   background: #1a1a2e;
@@ -23,7 +23,7 @@ body {
   z-index: 1000;
 }
 
-.pin-card {
+.login-card {
   background: #fff;
   border-radius: 16px;
   padding: 2.5rem;
@@ -36,24 +36,22 @@ body {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
-.pin-card h2 { margin: 0; font-size: 1.5rem; }
-.pin-card > p { margin: 0; color: #6b7280; }
+.login-card h2 { margin: 0; font-size: 1.5rem; }
+.login-card > p { margin: 0; color: #6b7280; }
 
-.pin-input {
+.login-input {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 1.2rem;
-  text-align: center;
-  letter-spacing: 0.3em;
+  font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
 }
 
-.pin-input:focus { border-color: #6366f1; }
+.login-input:focus { border-color: #6366f1; }
 
-.pin-error {
+.login-error {
   color: #dc2626;
   font-size: 0.9rem;
   margin: 0;

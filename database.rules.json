@@ -2,23 +2,39 @@
   "rules": {
     "session": {
       ".read": true,
-      ".write": true,
       "status": {
+        ".write": "(auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID') || (data.val() == 'closed' && newData.val() == 'open' && root.child('session/scheduledOpenAt').val() != null && root.child('session/scheduledOpenAt').val() <= now) || (data.val() == 'open' && newData.val() == 'closed' && root.child('session/scheduledCloseAt').val() != null && root.child('session/scheduledCloseAt').val() <= now)",
         ".validate": "newData.isString() && (newData.val() == 'open' || newData.val() == 'closed')"
       },
       "cycleDurationMinutes": {
+        ".write": "auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID'",
         ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 4320"
       },
-      "cycleStartedAt": { ".validate": "newData.val() == now" },
-      "openedAt": { ".validate": "newData.val() == now" },
-      "closedAt": { ".validate": "newData.val() == now" },
-      "scheduledOpenAt": { ".validate": "newData.isNumber()" },
-      "scheduledCloseAt": { ".validate": "newData.isNumber()" },
+      "cycleStartedAt": {
+        ".write": "auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID'",
+        ".validate": "newData.val() == now"
+      },
+      "openedAt": {
+        ".write": "(auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID') || (newData.val() == now && root.child('session/scheduledOpenAt').val() != null && root.child('session/scheduledOpenAt').val() <= now)",
+        ".validate": "newData.val() == now"
+      },
+      "closedAt": {
+        ".write": "(auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID') || (newData.val() == now && root.child('session/scheduledCloseAt').val() != null && root.child('session/scheduledCloseAt').val() <= now)",
+        ".validate": "newData.val() == now"
+      },
+      "scheduledOpenAt": {
+        ".write": "(auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID') || (!newData.exists() && root.child('session/scheduledOpenAt').val() != null && root.child('session/scheduledOpenAt').val() <= now)",
+        ".validate": "newData.isNumber()"
+      },
+      "scheduledCloseAt": {
+        ".write": "(auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID') || (!newData.exists() && root.child('session/scheduledCloseAt').val() != null && root.child('session/scheduledCloseAt').val() <= now)",
+        ".validate": "newData.isNumber()"
+      },
       "$other": { ".validate": false }
     },
     "entries": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID'",
       "$entryId": {
         ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
       }
@@ -26,7 +42,7 @@
     "votes": {
       ".read": true,
       "$visitorId": {
-        ".write": "!data.exists() || !newData.exists()",
+        ".write": "(!data.exists() && newData.exists()) || (auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID')",
         ".validate": "newData.hasChildren(['entryId','votedAt']) && root.child('entries').child(newData.child('entryId').val()).exists() && root.child('session/status').val() == 'open' && newData.child('votedAt').val() == now",
         "entryId": { ".validate": "newData.isString()" },
         "votedAt": { ".validate": "newData.val() == now" },

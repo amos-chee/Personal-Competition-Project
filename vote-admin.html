@@ -8,18 +8,19 @@
 </head>
 <body>
 
-  <!-- PIN overlay -->
-  <div id="pinOverlay" class="pin-overlay">
-    <div class="pin-card">
+  <!-- Login overlay (Firebase Authentication, email + password) -->
+  <div id="loginOverlay" class="login-overlay">
+    <form id="loginForm" class="login-card">
       <h2>Admin Access</h2>
-      <p>Enter the admin PIN to continue.</p>
-      <input type="password" id="pinInput" class="pin-input" placeholder="PIN" autocomplete="off">
-      <p id="pinError" class="pin-error" hidden>Incorrect PIN. Please try again.</p>
-      <button id="pinSubmitBtn" class="btn btn-primary">Enter</button>
-    </div>
+      <p>Sign in with the admin account to continue.</p>
+      <input type="email" id="emailInput" class="login-input" placeholder="Email" autocomplete="username" required>
+      <input type="password" id="passwordInput" class="login-input" placeholder="Password" autocomplete="current-password" required>
+      <p id="loginError" class="login-error" hidden></p>
+      <button type="submit" id="loginBtn" class="btn btn-primary">Sign in</button>
+    </form>
   </div>
 
-  <!-- Admin dashboard (revealed after correct PIN) -->
+  <!-- Admin dashboard (revealed after the admin signs in) -->
   <div id="adminApp" class="admin-app" hidden>
 
     <header class="admin-header">
@@ -30,6 +31,7 @@
       <div class="session-controls">
         <span id="totalVotesBadge" class="total-votes">0 votes</span>
         <button id="sessionToggleBtn" class="btn btn-session-open">Open Voting</button>
+        <button id="signOutBtn" class="btn btn-outline">Sign out</button>
       </div>
     </header>
 
@@ -132,8 +134,9 @@
     </div>
   </dialog>
 
-  <!-- Firebase Realtime Database (compat SDK) -->
+  <!-- Firebase Authentication + Realtime Database (compat SDK) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <script src="constants.js"></script>
   <script src="vote-admin-script.js"></script>

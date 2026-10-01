@@ -7,20 +7,10 @@
 //  1. Go to console.firebase.google.com → create a project
 //  2. Build → Realtime Database → Create database (test mode)
 //  3. Project Settings → Your apps → Add app (Web) → copy config below
-//  4. In Realtime Database → Rules, paste:
-//
-//  {
-//    "rules": {
-//      "session": { ".read": true, ".write": true },
-//      "entries":  { ".read": true, ".write": true },
-//      "votes": {
-//        ".read": true,
-//        "$fingerprint": {
-//          ".write": "!data.exists() && root.child('session/status').val() === 'open'"
-//        }
-//      }
-//    }
-//  }
+//  4. Build → Authentication → Sign-in method → enable Email/Password,
+//     then Users → Add user (this is the admin account)
+//  5. Copy that user's UID, then Realtime Database → Rules → paste
+//     database.rules.json, replacing REPLACE_WITH_ADMIN_UID with it
 // ============================================================
 
 const CONFIG = {
@@ -49,9 +39,6 @@ const CONFIG = {
   storageBucket: "mecha-master-2026-voting.firebasestorage.app",
   messagingSenderId: "1008694811441",
   appId: "1:1008694811441:web:2104f54848e316946cee10"
-},
-
-  // PIN to access the admin dashboard (vote-admin.html)
-  VOTING_ADMIN_PIN: "1234"
+}
 
 };

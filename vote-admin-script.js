@@ -1,9 +1,12 @@
 // ── DOM refs ───────────────────────────────────────────────
-const pinOverlay           = document.getElementById('pinOverlay');
-const pinInput             = document.getElementById('pinInput');
-const pinSubmitBtn         = document.getElementById('pinSubmitBtn');
-const pinError             = document.getElementById('pinError');
-const adminApp             = document.getElementById('adminApp');
+const loginOverlay         = document.getElementById('loginOverlay');
+const loginForm            = document.getElementById('loginForm');
+const emailInput           = document.getElementById('emailInput');
+const passwordInput        = document.getElementById('passwordInput');
+const loginBtn             = document.getElementById('loginBtn');
+const loginError           = document.getElementById('loginError');
+const signOutBtn           = document.getElementById('signOutBtn');
+const adminApp            = document.getElementById('adminApp');
 const competitionTitle     = document.getElementById('competitionTitle');
 const totalVotesBadge      = document.getElementById('totalVotesBadge');
 const sessionToggleBtn     = document.getElementById('sessionToggleBtn');
@@ -52,28 +55,49 @@ let pendingDeleteId = null;
 competitionTitle.textContent = CONFIG.competitionName;
 document.title = CONFIG.competitionName + ' — Admin';
 
-// ── PIN authentication ─────────────────────────────────────
-function checkPin() {
-  const entered = pinInput.value.trim();
-  if (entered === String(CONFIG.VOTING_ADMIN_PIN)) {
-    pinOverlay.hidden = true;
-    adminApp.hidden   = false;
-    initFirebase();
-  } else {
-    pinError.hidden = false;
-    pinInput.value  = '';
-    pinInput.focus();
-  }
+// ── Admin authentication (Firebase Auth, email + password) ──
+// Any signed-in user sees the dashboard, but database.rules.json only lets
+// the admin's UID write, so everyone else just gets permission errors.
+let auth = null;
+let dashboardStarted = false;
+
+function showLoginError(msg) {
+  loginError.textContent = msg;
+  loginError.hidden = false;
 }
 
-pinSubmitBtn.addEventListener('click', checkPin);
-pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPin(); });
+loginForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  loginError.hidden = true;
+  loginBtn.disabled = true;
+  try {
+    await auth.signInWithEmailAndPassword(emailInput.value.trim(), passwordInput.value);
+  } catch (err) {
+    console.error('Sign-in failed:', err);
+    showLoginError('Incorrect email or password.');
+    passwordInput.value = '';
+    passwordInput.focus();
+  } finally {
+    loginBtn.disabled = false;
+  }
+});
 
-// ── Firebase init ──────────────────────────────────────────
-function initFirebase() {
+signOutBtn.addEventListener('click', async () => {
+  await auth.signOut();
+  location.reload();
+});
+
+function showSetupBanner(html) {
+  // No usable Firebase config, so sign-in is impossible: reveal the page so the banner is visible
+  loginOverlay.hidden = true;
+  adminApp.hidden     = false;
+  showFirebaseBanner(html);
+}
+
+function initAuth() {
   // Detect unconfigured placeholder values
   if (CONFIG.FIREBASE_CONFIG.databaseURL.includes('REPLACE_ME')) {
-    showFirebaseBanner(
+    showSetupBanner(
       'Firebase setup required — open <code>constants.js</code> and replace the ' +
       '<code>REPLACE_ME</code> values with your Firebase project config.<br>' +
       '<span style="font-size:0.85rem;opacity:0.8">Firebase Console → Project Settings → Your apps → SDK setup &amp; config</span>'
@@ -84,9 +108,27 @@ function initFirebase() {
   try {
     firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
   } catch (err) {
-    showFirebaseBanner('Firebase initialization error — check the browser console for details.');
+    showSetupBanner('Firebase initialization error — check the browser console for details.');
     return;
   }
+  auth = firebase.auth();
+
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      loginOverlay.hidden = false;
+      adminApp.hidden     = true;
+      return;
+    }
+    loginOverlay.hidden = true;
+    adminApp.hidden     = false;
+    startDashboard();
+  });
+}
+
+// ── Dashboard (runs once, after the admin has signed in) ────
+function startDashboard() {
+  if (dashboardStarted) return;
+  dashboardStarted = true;
   db = firebase.database();
 
   // Seed entries from CONFIG.entries if the Firebase entries node is empty
@@ -618,6 +660,9 @@ function showFirebaseBanner(html) {
   const panel = document.getElementById('tabResults');
   panel.insertBefore(banner, panel.firstChild);
 }
+
+// ── Start ──────────────────────────────────────────────────
+initAuth();
 
 // ── Helpers ────────────────────────────────────────────────
 function escHtml(str) {

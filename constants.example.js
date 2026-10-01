@@ -1,13 +1,16 @@
 // ============================================================
 //  CROWD VOTING — CONFIGURATION TEMPLATE
-//  Copy this file to constants.js (git-ignored) and fill in your
-//  own values. The pages load constants.js, not this file.
+//  Copy this file to constants.js and fill in your own values.
+//  The pages load constants.js, not this file.
 //
 //  FIREBASE SETUP (one-time):
 //  1. Go to console.firebase.google.com → create a project
 //  2. Build → Realtime Database → Create database
 //  3. Project Settings → Your apps → Add app (Web) → copy config below
-//  4. Realtime Database → Rules → paste the contents of database.rules.json
+//  4. Build → Authentication → Sign-in method → enable Email/Password,
+//     then Users → Add user (this is the admin account)
+//  5. Copy that user's UID, then Realtime Database → Rules → paste
+//     database.rules.json, replacing REPLACE_WITH_ADMIN_UID with it
 // ============================================================
 
 const CONFIG = {
@@ -32,9 +35,6 @@ const CONFIG = {
     storageBucket: "REPLACE_ME.firebasestorage.app",
     messagingSenderId: "REPLACE_ME",
     appId: "REPLACE_ME"
-  },
-
-  // PIN to access the admin dashboard (vote-admin.html)
-  VOTING_ADMIN_PIN: "CHANGE_ME"
+  }
 
 };
