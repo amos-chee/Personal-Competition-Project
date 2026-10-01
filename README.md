@@ -18,7 +18,7 @@ A small real-time crowd-voting web app. Visitors pick their favorite entry, an a
 **Use your own Firebase project:**
 1. Create a Firebase project with a **Realtime Database**, and add a **Web app** to get its config.
 2. Edit `constants.js` (`constants.example.js` is a blank template): set `FIREBASE_CONFIG`, `competitionName` and the seed `entries`.
-3. In **Authentication → Sign-in method**, enable **Email/Password**. Then in **Users**, add the admin user and copy its **User UID**.
+3. In **Authentication → Sign-in method**, enable **Email/Password** (for the admin) and **Anonymous** (for voters). Then in **Users**, add the admin user and copy its **User UID**.
 4. Paste `database.rules.json` into **Realtime Database → Rules**, replacing every `REPLACE_WITH_ADMIN_UID` with that UID.
 5. Open `vote-admin.html` in a browser, sign in, and open voting. Voters use `vote.html`, and `vote-results.html` shows the live tally.
 
@@ -34,13 +34,13 @@ See `HOSTING.txt` for the full deploy and undeploy guide.
 
 ## How it works
 
-- Each voter gets a generated visitor ID. The database rules allow writing `votes/<visitorId>` only if it does not exist yet, if the entry exists and if the session status is `open`. Timestamps use the server's `now`.
+- Each browser signs in anonymously with Firebase Authentication and gets its own persistent user ID. The database rules allow writing `votes/<uid>` only for that same uid, only if it does not exist yet, if the entry exists and if the session status is `open`. Timestamps use the server's `now`.
 - Session state (`status`, cycle duration, scheduled open and close times) lives under `session/`, and entries under `entries/`.
 
 ## Security notes
 
 - The admin signs in with Firebase Authentication. `database.rules.json` only lets the account whose UID is in the rules write to `entries/`, delete votes, or change `session/`. The dashboard itself shows to any signed-in user, but the rules block everyone else's writes. The file ships with a `REPLACE_WITH_ADMIN_UID` placeholder, and running it unchanged locks out all admin writes.
-- Anyone can still read data and cast one vote per device while voting is open. Visitor IDs live in the browser, so a determined visitor can vote again from a new browser profile.
+- Anyone can still read data and cast one vote per device while voting is open. The anonymous ID is per browser, so a determined visitor can vote again from another browser or a private window.
 - The one exception to admin-only writes is the scheduled open and close. There is no server to run it, so any open page may flip `session/status`, but only after the admin's scheduled time has passed. The rules enforce that condition.
 - The Firebase web `apiKey` in `constants.js` is a public identifier and not a secret. The rules and the admin password protect the data.
 

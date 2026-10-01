@@ -65,57 +65,15 @@ setTimeout(() => {
   }
 }, 10000);
 
-// ── Device fingerprint ─────────────────────────────────────
-// Combines hardware properties + public IP address into one hash.
-// Hardware props are browser-agnostic; public IP ties the hash to the
-// network connection, so same device + same network + any browser → same hash.
-// Different devices on the same WiFi still get different hashes because their
-// hardware properties differ.
-async function getDeviceId() {
-  const ip  = await getPublicIP();
-  const raw = [
-    screen.width,
-    screen.height,
-    screen.colorDepth,
-    navigator.hardwareConcurrency || 0,
-    Intl.DateTimeFormat().resolvedOptions().timeZone,
-    getGpuRenderer(),
-    ip
-  ].join('|');
-  // FNV-1a 32-bit hash
-  let h = 0x811c9dc5;
-  for (let i = 0; i < raw.length; i++) {
-    h ^= raw.charCodeAt(i);
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
-  return 'dev_' + h.toString(36);
-}
-
-// Fetch public IP with a 3-second timeout; returns '' on failure so the
-// fingerprint still works (hardware-only) if the API is unreachable.
-async function getPublicIP() {
-  try {
-    const res = await Promise.race([
-      fetch('https://api.ipify.org?format=json'),
-      new Promise((_, reject) => setTimeout(() => reject(), 3000))
-    ]);
-    const data = await res.json();
-    return data.ip || '';
-  } catch {
-    return '';
-  }
-}
-
-function getGpuRenderer() {
-  try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) return '';
-    const ext = gl.getExtension('WEBGL_debug_renderer_info');
-    return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : '';
-  } catch {
-    return '';
-  }
+// ── Voter identity (Firebase anonymous auth) ───────────────
+// Each browser gets its own random, persistent user ID. Votes are stored
+// under votes/<uid>, and the database rules only let a user write their own
+// uid, so one browser = one vote and nobody can vote as someone else.
+// (The earlier hardware + IP fingerprint made identical phones on the same
+// venue Wi-Fi collide, so real voters were told they had already voted.)
+async function getVisitorId() {
+  const cred = await firebase.auth().signInAnonymously();
+  return cred.user.uid;
 }
 
 // ── Reveal app once all three listeners have fired ─────────
@@ -128,7 +86,15 @@ function maybeShowApp() {
 
 // ── Main init ──────────────────────────────────────────────
 async function init() {
-  visitorId = await getDeviceId();
+  try {
+    visitorId = await getVisitorId();
+  } catch (err) {
+    console.error('Anonymous sign-in failed:', err);
+    loadingOverlay.innerHTML =
+      '<p style="color:#dc2626;padding:2rem;text-align:center;max-width:480px">' +
+      'Could not start a voting session.<br>Please check your connection and reload the page.</p>';
+    return;
+  }
 
   db.ref('session').on('value', snap => {
     sessionData   = snap.val() || {};

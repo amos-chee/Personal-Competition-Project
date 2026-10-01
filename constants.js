@@ -7,8 +7,8 @@
 //  1. Go to console.firebase.google.com → create a project
 //  2. Build → Realtime Database → Create database (test mode)
 //  3. Project Settings → Your apps → Add app (Web) → copy config below
-//  4. Build → Authentication → Sign-in method → enable Email/Password,
-//     then Users → Add user (this is the admin account)
+//  4. Build → Authentication → Sign-in method → enable Email/Password
+//     (admin) and Anonymous (voters), then Users → Add user (this is the admin account)
 //  5. Copy that user's UID, then Realtime Database → Rules → paste
 //     database.rules.json, replacing REPLACE_WITH_ADMIN_UID with it
 // ============================================================

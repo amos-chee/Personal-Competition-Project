@@ -42,7 +42,7 @@
     "votes": {
       ".read": true,
       "$visitorId": {
-        ".write": "(!data.exists() && newData.exists()) || (auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID')",
+        ".write": "(!data.exists() && newData.exists() && auth != null && $visitorId === auth.uid) || (auth != null && auth.uid == 'REPLACE_WITH_ADMIN_UID')",
         ".validate": "newData.hasChildren(['entryId','votedAt']) && root.child('entries').child(newData.child('entryId').val()).exists() && root.child('session/status').val() == 'open' && newData.child('votedAt').val() == now",
         "entryId": { ".validate": "newData.isString()" },
         "votedAt": { ".validate": "newData.val() == now" },
