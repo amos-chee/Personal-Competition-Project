@@ -1,3 +1,6 @@
+// Pure helpers live in lib.js (unit tested)
+const { escHtml, formatDuration, scheduleUpdate } = VotingLib;
+
 // ── DOM refs ───────────────────────────────────────────────
 const loadingOverlay   = document.getElementById('loadingOverlay');
 const resultsApp       = document.getElementById('resultsApp');
@@ -103,20 +106,8 @@ async function fetchVotesAndDisplay() {
 // whichever page has a tab open when the scheduled time arrives performs
 // the flip, since this is a static site with no server to run it centrally.
 function checkSchedule() {
-  const now = Date.now();
-  if (sessionData.status === 'closed' && sessionData.scheduledOpenAt && now >= sessionData.scheduledOpenAt) {
-    db.ref('session').update({
-      status: 'open',
-      openedAt: firebase.database.ServerValue.TIMESTAMP,
-      scheduledOpenAt: null
-    });
-  } else if (sessionData.status === 'open' && sessionData.scheduledCloseAt && now >= sessionData.scheduledCloseAt) {
-    db.ref('session').update({
-      status: 'closed',
-      closedAt: firebase.database.ServerValue.TIMESTAMP,
-      scheduledCloseAt: null
-    });
-  }
+  const update = scheduleUpdate(sessionData.status, sessionData, Date.now(), firebase.database.ServerValue.TIMESTAMP);
+  if (update) db.ref('session').update(update);
 }
 
 setInterval(checkSchedule, 5000);
@@ -125,10 +116,7 @@ setInterval(checkSchedule, 5000);
 setInterval(updateCountdown, 1000);
 
 function getCycleDurationMinutes() {
-  // Support both new format (cycleDurationMinutes) and old format (cycleDurationHours)
-  if (sessionData.cycleDurationMinutes != null) return sessionData.cycleDurationMinutes;
-  if (sessionData.cycleDurationHours   != null) return sessionData.cycleDurationHours * 60;
-  return 180; // default 3 hours
+  return VotingLib.getCycleDurationMinutes(sessionData);
 }
 
 function updateCountdown() {
@@ -159,11 +147,7 @@ function updateCountdown() {
 }
 
 function currentCycleInfo() {
-  const cycleDurationMinutes = getCycleDurationMinutes();
-  const { cycleStartedAt } = sessionData;
-  if (!cycleStartedAt) return { cycleNumber: 0, cycleStartedAt: null };
-  const cycleNumber = Math.floor((Date.now() - cycleStartedAt) / (cycleDurationMinutes * 60000));
-  return { cycleNumber, cycleStartedAt };
+  return VotingLib.cycleInfo(sessionData, Date.now());
 }
 
 // ── Render status badge (always live) ─────────────────────
@@ -182,13 +166,7 @@ function renderResults() {
   const total = Object.values(displayedCounts).reduce((a, b) => a + b, 0);
   totalVotesEl.textContent = total + ' vote' + (total !== 1 ? 's' : '') + ' total';
 
-  const rows = Object.entries(entries)
-    .map(([id, name]) => ({
-      name,
-      votes: displayedCounts[id] || 0,
-      pct:   total > 0 ? Math.round((displayedCounts[id] || 0) / total * 100) : 0
-    }))
-    .sort((a, b) => b.votes - a.votes);
+  const { rows } = VotingLib.rankRows(displayedCounts, entries);
 
   noVotesMsg.hidden  = total > 0 || rows.length === 0;
   resultsList.hidden = total === 0;
@@ -219,20 +197,3 @@ function renderResults() {
   });
 }
 
-// ── Helpers ────────────────────────────────────────────────
-function formatDuration(totalSeconds) {
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = Math.floor(totalSeconds % 60);
-  return String(h).padStart(2, '0') + ':' +
-         String(m).padStart(2, '0') + ':' +
-         String(s).padStart(2, '0');
-}
-
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}

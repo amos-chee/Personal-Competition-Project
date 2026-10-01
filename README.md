@@ -32,6 +32,19 @@ firebase deploy --only hosting
 
 See `HOSTING.txt` for the full deploy and undeploy guide.
 
+## Testing
+
+The app itself needs no tooling. The tests use Node 20+ (built-in test runner) and `npm install` for the dev dependencies.
+
+| Command | What it covers | Needs |
+|---|---|---|
+| `npm run test:unit` | `lib.js` helpers: vote counting and ranking, CSV import, HTML escaping, date and duration formatting, results cycle, auto open/close decision | Node only |
+| `npm run test:rules` | `database.rules.json` against the Firebase Realtime Database emulator: admin-only writes, one vote per uid, no forging, closed-session blocking, validation, scheduled open/close. It substitutes a test UID for `REPLACE_WITH_ADMIN_UID` and never touches live data. | Java 11+ and `firebase-tools` |
+| `LIVE_TESTS=1 npm run test:live` | Read-only `GET` smoke tests of the deployed site and the live database REST API. They write nothing. | Network |
+| `npm run test:all` | Unit and rules tests | as above |
+
+On PowerShell, set the live flag with `$env:LIVE_TESTS=1; npm run test:live`.
+
 ## How it works
 
 - Each browser signs in anonymously with Firebase Authentication and gets its own persistent user ID. The database rules allow writing `votes/<uid>` only for that same uid, only if it does not exist yet, if the entry exists and if the session status is `open`. Timestamps use the server's `now`.
@@ -48,6 +61,8 @@ See `HOSTING.txt` for the full deploy and undeploy guide.
 
 ```
 vote*.html / vote*-script.js / vote*-styles.css   the three pages
+lib.js                                            pure helpers shared by the pages (unit tested)
+test/unit, test/rules, test/live                  unit, emulator rules and live smoke tests
 constants.js                                      demo config (Firebase project, admin email)
 constants.example.js                              blank config template
 database.rules.json                               Realtime Database rules

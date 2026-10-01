@@ -1,3 +1,6 @@
+// Pure helpers live in lib.js (unit tested)
+const { escHtml, escAttr, scheduleUpdate } = VotingLib;
+
 // ── DOM refs ───────────────────────────────────────────────
 const loadingOverlay     = document.getElementById('loadingOverlay');
 const closedOverlay      = document.getElementById('closedOverlay');
@@ -207,20 +210,8 @@ searchInput.addEventListener('input', () => {
 // the flip, since this is a static site with no server to run it centrally.
 function checkSchedule() {
   if (!db) return;
-  const now = Date.now();
-  if (sessionStatus === 'closed' && sessionData.scheduledOpenAt && now >= sessionData.scheduledOpenAt) {
-    db.ref('session').update({
-      status: 'open',
-      openedAt: firebase.database.ServerValue.TIMESTAMP,
-      scheduledOpenAt: null
-    });
-  } else if (sessionStatus === 'open' && sessionData.scheduledCloseAt && now >= sessionData.scheduledCloseAt) {
-    db.ref('session').update({
-      status: 'closed',
-      closedAt: firebase.database.ServerValue.TIMESTAMP,
-      scheduledCloseAt: null
-    });
-  }
+  const update = scheduleUpdate(sessionStatus, sessionData, Date.now(), firebase.database.ServerValue.TIMESTAMP);
+  if (update) db.ref('session').update(update);
 }
 
 setInterval(checkSchedule, 5000);
@@ -251,19 +242,6 @@ confirmOkBtn.addEventListener('click', async () => {
     pendingVoteEntryId = null;
   }
 });
-
-// ── Helpers ────────────────────────────────────────────────
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function escAttr(str) {
-  return String(str).replace(/"/g, '&quot;');
-}
 
 // ── Boot ───────────────────────────────────────────────────
 init();

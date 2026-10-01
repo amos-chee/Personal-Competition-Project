@@ -1,5 +1,8 @@
+// Pure helpers live in lib.js (unit tested)
+const { escHtml, escAttr, parseCSVFirstColumn, toLocalInputValue, scheduleUpdate } = VotingLib;
+
 // ── DOM refs ───────────────────────────────────────────────
-const loginOverlay         = document.getElementById('loginOverlay');
+const loginOverlay        = document.getElementById('loginOverlay');
 const loginForm            = document.getElementById('loginForm');
 const emailInput           = document.getElementById('emailInput');
 const passwordInput        = document.getElementById('passwordInput');
@@ -316,12 +319,6 @@ resetCycleBtn.addEventListener('click', () => {
 // actual flip — whichever page happens to have a tab open when the
 // scheduled time arrives. The fired field is cleared on flip so it can't
 // re-trigger after a later manual override.
-function toLocalInputValue(epochMs) {
-  if (!epochMs) return '';
-  const d = new Date(epochMs - new Date().getTimezoneOffset() * 60000);
-  return d.toISOString().slice(0, 16);
-}
-
 function syncScheduleInputs() {
   if (document.activeElement !== scheduledOpenInput) {
     scheduledOpenInput.value = toLocalInputValue(sessionData.scheduledOpenAt);
@@ -337,20 +334,8 @@ function syncScheduleInputs() {
 
 function checkSchedule() {
   if (!db) return;
-  const now = Date.now();
-  if (sessionStatus === 'closed' && sessionData.scheduledOpenAt && now >= sessionData.scheduledOpenAt) {
-    db.ref('session').update({
-      status: 'open',
-      openedAt: firebase.database.ServerValue.TIMESTAMP,
-      scheduledOpenAt: null
-    });
-  } else if (sessionStatus === 'open' && sessionData.scheduledCloseAt && now >= sessionData.scheduledCloseAt) {
-    db.ref('session').update({
-      status: 'closed',
-      closedAt: firebase.database.ServerValue.TIMESTAMP,
-      scheduledCloseAt: null
-    });
-  }
+  const update = scheduleUpdate(sessionStatus, sessionData, Date.now(), firebase.database.ServerValue.TIMESTAMP);
+  if (update) db.ref('session').update(update);
 }
 
 setInterval(checkSchedule, 5000);
@@ -375,23 +360,7 @@ clearScheduleBtn.addEventListener('click', () => {
 
 // ── Results rendering ──────────────────────────────────────
 function computeResults() {
-  const counts = {};
-  for (const v of Object.values(votes)) {
-    if (v && v.entryId) counts[v.entryId] = (counts[v.entryId] || 0) + 1;
-  }
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
-
-  return {
-    rows: Object.entries(entries)
-      .map(([id, name]) => ({
-        id,
-        name,
-        votes: counts[id] || 0,
-        pct: total > 0 ? Math.round((counts[id] || 0) / total * 100) : 0
-      }))
-      .sort((a, b) => b.votes - a.votes),
-    total
-  };
+  return VotingLib.computeResults(votes, entries);
 }
 
 function renderResults() {
@@ -421,11 +390,7 @@ function renderResults() {
 
 // ── Entries management ─────────────────────────────────────
 function getVoteCounts() {
-  const counts = {};
-  for (const v of Object.values(votes)) {
-    if (v && v.entryId) counts[v.entryId] = (counts[v.entryId] || 0) + 1;
-  }
-  return counts;
+  return VotingLib.countVotes(votes);
 }
 
 function renderEntriesList() {
@@ -537,24 +502,6 @@ importCsvInput.addEventListener('change', () => {
   reader.readAsText(file);
 });
 
-// Parse first column of each non-empty CSV row (handles quoted fields)
-function parseCSVFirstColumn(text) {
-  const results = [];
-  for (const line of text.split(/\r?\n/)) {
-    if (!line.trim()) continue;
-    let name;
-    if (line.startsWith('"')) {
-      const close = line.indexOf('"', 1);
-      name = close > 0 ? line.slice(1, close).replace(/""/g, '"') : line.slice(1);
-    } else {
-      name = line.split(',')[0];
-    }
-    name = name.trim();
-    if (name) results.push(name);
-  }
-  return results;
-}
-
 // ── Delete all entries ─────────────────────────────────────
 deleteAllEntriesBtn.addEventListener('click', () => {
   if (!db) return;
@@ -663,16 +610,3 @@ function showFirebaseBanner(html) {
 
 // ── Start ──────────────────────────────────────────────────
 initAuth();
-
-// ── Helpers ────────────────────────────────────────────────
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function escAttr(str) {
-  return String(str).replace(/"/g, '&quot;');
-}
