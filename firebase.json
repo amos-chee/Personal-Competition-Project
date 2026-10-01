@@ -4,6 +4,12 @@
     "ignore": [
       "firebase.json",
       "**/.*",
+      ".agents/**",
+      "skills-lock.json",
+      "README.md",
+      "HOSTING.txt",
+      "database.rules.json",
+      "constants.example.js",
       "**/node_modules/**",
       "**/*.bat",
       "**/*.exe",
