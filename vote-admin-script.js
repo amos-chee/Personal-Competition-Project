@@ -122,6 +122,11 @@ function initAuth() {
       adminApp.hidden     = true;
       return;
     }
+    if (user.isAnonymous) {
+      // A leftover voter session is not an admin: ask for the real login
+      auth.signOut();
+      return;
+    }
     loginOverlay.hidden = true;
     adminApp.hidden     = false;
     startDashboard();
@@ -223,7 +228,13 @@ sessionToggleBtn.addEventListener('click', () => {
   const update = { status: newStatus };
   if (newStatus === 'open')   update.openedAt = now;
   if (newStatus === 'closed') update.closedAt = now;
-  db.ref('session').update(update);
+  db.ref('session').update(update).catch(err => {
+    console.error('Could not change voting status:', err);
+    alert('Could not ' + (newStatus === 'open' ? 'open' : 'close') + ' voting: ' +
+      (err.code === 'PERMISSION_DENIED' || /permission/i.test(err.message)
+        ? 'permission denied. Sign out and sign in again with the admin account.'
+        : err.message));
+  });
 });
 
 // ── Manual refresh ─────────────────────────────────────────

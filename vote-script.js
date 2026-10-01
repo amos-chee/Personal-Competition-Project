@@ -47,10 +47,14 @@ if (CONFIG.FIREBASE_CONFIG.databaseURL.includes('REPLACE_ME')) {
   throw new Error('Firebase not configured');
 }
 
-let db;
+// The voter page uses a *named* Firebase app so its anonymous sign-in is stored
+// separately from the admin's. With the default app, voting in the same browser
+// would replace the admin's login with an anonymous user and the admin's
+// open/close/edit writes would start failing with permission denied.
+let db, voterApp;
 try {
-  firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
-  db = firebase.database();
+  voterApp = firebase.initializeApp(CONFIG.FIREBASE_CONFIG, 'voter');
+  db = voterApp.database();
 } catch (err) {
   loadingOverlay.innerHTML =
     '<p style="color:#dc2626;padding:2rem;text-align:center;max-width:480px">' +
@@ -75,7 +79,7 @@ setTimeout(() => {
 // (The earlier hardware + IP fingerprint made identical phones on the same
 // venue Wi-Fi collide, so real voters were told they had already voted.)
 async function getVisitorId() {
-  const cred = await firebase.auth().signInAnonymously();
+  const cred = await voterApp.auth().signInAnonymously();
   return cred.user.uid;
 }
 
