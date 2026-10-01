@@ -71,3 +71,6 @@ node_modules/
 # Local tooling
 .agents/
 skills-lock.json
+
+# Local config (copy from constants.example.js)
+constants.js
