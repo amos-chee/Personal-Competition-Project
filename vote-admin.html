@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Crowd Vote</title>
+  <link rel="stylesheet" href="vote-admin-styles.css">
+</head>
+<body>
+
+  <!-- PIN overlay -->
+  <div id="pinOverlay" class="pin-overlay">
+    <div class="pin-card">
+      <h2>Admin Access</h2>
+      <p>Enter the admin PIN to continue.</p>
+      <input type="password" id="pinInput" class="pin-input" placeholder="PIN" autocomplete="off">
+      <p id="pinError" class="pin-error" hidden>Incorrect PIN. Please try again.</p>
+      <button id="pinSubmitBtn" class="btn btn-primary">Enter</button>
+    </div>
+  </div>
+
+  <!-- Admin dashboard (revealed after correct PIN) -->
+  <div id="adminApp" class="admin-app" hidden>
+
+    <header class="admin-header">
+      <div>
+        <h1 id="competitionTitle" class="admin-header__title"></h1>
+        <span class="admin-header__label">Admin Dashboard</span>
+      </div>
+      <div class="session-controls">
+        <span id="totalVotesBadge" class="total-votes">0 votes</span>
+        <button id="sessionToggleBtn" class="btn btn-session-open">Open Voting</button>
+      </div>
+    </header>
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn tab-btn--active" data-tab="results">Results</button>
+      <button class="tab-btn" data-tab="entries">Entries</button>
+    </div>
+
+    <!-- Results tab -->
+    <div id="tabResults" class="tab-panel">
+      <div class="panel-actions">
+        <button id="refreshBtn" class="btn btn-outline">Refresh</button>
+        <button id="exportCsvBtn" class="btn btn-outline">Export CSV</button>
+        <button id="resetVotesBtn" class="btn btn-danger-outline">Reset All Votes</button>
+      </div>
+
+      <!-- Voting schedule (auto open/close) -->
+      <div class="cycle-config">
+        <label class="cycle-label">Voting Schedule (optional)</label>
+        <div class="cycle-row">
+          <label class="schedule-field">
+            Auto-open at
+            <input type="datetime-local" id="scheduledOpenInput" class="text-input schedule-datetime">
+          </label>
+          <label class="schedule-field">
+            Auto-close at
+            <input type="datetime-local" id="scheduledCloseInput" class="text-input schedule-datetime">
+          </label>
+          <button id="saveScheduleBtn" class="btn btn-primary">Save Schedule</button>
+          <button id="clearScheduleBtn" class="btn btn-outline">Clear</button>
+        </div>
+        <p id="scheduleStatusMsg" class="schedule-status-msg"></p>
+      </div>
+
+      <!-- Cycle configuration -->
+      <div class="cycle-config">
+        <label class="cycle-label">Results display cycle</label>
+        <div class="cycle-row">
+          <input type="number" id="cycleHoursInput" class="cycle-input" min="0" max="72" value="3">
+          <span class="cycle-unit">hr</span>
+          <input type="number" id="cycleMinutesInput" class="cycle-input" min="0" max="59" value="0">
+          <span class="cycle-unit">min</span>
+          <button id="saveCycleBtn" class="btn btn-primary">Save &amp; Start Cycle</button>
+          <button id="resetCycleBtn" class="btn btn-outline">Reset Cycle Now</button>
+        </div>
+      </div>
+
+      <table id="resultsTable" class="results-table" hidden>
+        <thead>
+          <tr>
+            <th class="col-rank">Rank</th>
+            <th>Entry</th>
+            <th class="col-votes">Votes</th>
+            <th class="col-pct">%</th>
+            <th class="col-bar">Distribution</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+
+      <p id="noVotesMsg" class="empty-msg">No votes have been cast yet.</p>
+    </div>
+
+    <!-- Entries tab -->
+    <div id="tabEntries" class="tab-panel" hidden>
+      <div class="add-entry-form">
+        <input type="text" id="newEntryInput" class="text-input" placeholder="New entry name..." maxlength="80">
+        <button id="addEntryBtn" class="btn btn-primary">Add Entry</button>
+      </div>
+      <div class="panel-actions">
+        <button id="importCsvBtn" class="btn btn-outline">Import CSV</button>
+        <input type="file" id="importCsvInput" accept=".csv" hidden>
+        <button id="exportEntriesCsvBtn" class="btn btn-outline">Export Entries CSV</button>
+        <button id="deleteAllEntriesBtn" class="btn btn-danger-outline">Delete All Entries</button>
+      </div>
+      <ul id="entriesList" class="entries-list"></ul>
+      <p id="noEntriesMsg" class="empty-msg" hidden>No entries yet. Add one above.</p>
+    </div>
+
+  </div>
+
+  <!-- Generic confirmation dialog (reused for all confirm actions) -->
+  <dialog id="confirmDialog" class="confirm-dialog">
+    <h3 id="confirmTitle"></h3>
+    <p id="confirmMsg"></p>
+    <div class="dialog-actions">
+      <button id="confirmCancelBtn" class="btn btn-secondary">Cancel</button>
+      <button id="confirmOkBtn" class="btn btn-danger">Confirm</button>
+    </div>
+  </dialog>
+
+  <!-- Delete entry confirmation dialog -->
+  <dialog id="deleteEntryDialog" class="confirm-dialog">
+    <h3>Delete entry?</h3>
+    <p>Delete <strong id="deleteEntryName"></strong>? This cannot be undone.</p>
+    <div class="dialog-actions">
+      <button id="deleteEntryCancelBtn" class="btn btn-secondary">Cancel</button>
+      <button id="deleteEntryConfirmBtn" class="btn btn-danger">Delete</button>
+    </div>
+  </dialog>
+
+  <!-- Firebase Realtime Database (compat SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="constants.js"></script>
+  <script src="vote-admin-script.js"></script>
+</body>
+</html>

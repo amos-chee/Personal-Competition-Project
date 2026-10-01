@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Results</title>
+  <link rel="stylesheet" href="vote-results-styles.css">
+</head>
+<body>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading results...</p>
+  </div>
+
+  <div id="resultsApp" class="results-app" hidden>
+
+    <header class="results-header">
+      <div class="results-header__left">
+        <h1 id="competitionTitle" class="results-header__title"></h1>
+        <span class="results-header__sub">Live Results</span>
+      </div>
+      <div class="results-header__right">
+        <div class="cycle-countdown">
+          <div class="cycle-countdown__label">Next cycle in</div>
+          <div id="countdownTimer" class="cycle-countdown__time">--:--:--</div>
+        </div>
+        <span id="statusBadge" class="status-badge"></span>
+      </div>
+    </header>
+
+    <main class="results-main">
+      <div id="totalVotes" class="total-votes-bar"></div>
+      <div id="resultsList" class="results-list"></div>
+      <p id="noVotesMsg" class="no-votes-msg" hidden>No votes have been cast yet.</p>
+    </main>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="constants.js"></script>
+  <script src="vote-results-script.js"></script>
+</body>
+</html>

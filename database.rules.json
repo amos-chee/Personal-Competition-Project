@@ -1,0 +1,37 @@
+{
+  "rules": {
+    "session": {
+      ".read": true,
+      ".write": true,
+      "status": {
+        ".validate": "newData.isString() && (newData.val() == 'open' || newData.val() == 'closed')"
+      },
+      "cycleDurationMinutes": {
+        ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 4320"
+      },
+      "cycleStartedAt": { ".validate": "newData.val() == now" },
+      "openedAt": { ".validate": "newData.val() == now" },
+      "closedAt": { ".validate": "newData.val() == now" },
+      "scheduledOpenAt": { ".validate": "newData.isNumber()" },
+      "scheduledCloseAt": { ".validate": "newData.isNumber()" },
+      "$other": { ".validate": false }
+    },
+    "entries": {
+      ".read": true,
+      ".write": true,
+      "$entryId": {
+        ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+      }
+    },
+    "votes": {
+      ".read": true,
+      "$visitorId": {
+        ".write": "!data.exists() || !newData.exists()",
+        ".validate": "newData.hasChildren(['entryId','votedAt']) && root.child('entries').child(newData.child('entryId').val()).exists() && root.child('session/status').val() == 'open' && newData.child('votedAt').val() == now",
+        "entryId": { ".validate": "newData.isString()" },
+        "votedAt": { ".validate": "newData.val() == now" },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

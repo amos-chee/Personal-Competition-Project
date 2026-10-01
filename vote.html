@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crowd Vote</title>
+  <link rel="stylesheet" href="vote-styles.css">
+</head>
+<body>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Voting closed overlay (shown to users who have not yet voted) -->
+  <div id="closedOverlay" class="status-overlay" hidden>
+    <div class="status-overlay__card">
+      <h2>Voting is currently closed</h2>
+      <p>Please wait for the organiser to open voting.</p>
+    </div>
+  </div>
+
+  <!-- Main app (hidden until Firebase + fingerprint ready) -->
+  <div id="app" class="app" hidden>
+    <header class="app-header">
+      <h1 id="competitionTitle" class="app-header__title"></h1>
+      <span id="statusBadge" class="status-badge"></span>
+    </header>
+
+    <main class="app-main">
+      <div id="alreadyVotedBanner" class="already-voted-banner" hidden>
+        You have voted for <strong id="yourVoteEntry"></strong>. Live results are shown below.
+      </div>
+      <div class="search-bar-sticky">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search entries..." autocomplete="off">
+      </div>
+      <div id="entryGrid" class="entry-grid"></div>
+    </main>
+  </div>
+
+  <!-- Vote confirmation dialog -->
+  <dialog id="confirmDialog" class="confirm-dialog">
+    <h3>Confirm your vote</h3>
+    <p>Vote for <strong id="confirmEntryName"></strong>?</p>
+    <p class="confirm-note">Your vote cannot be changed once submitted.</p>
+    <div class="dialog-actions">
+      <button id="confirmCancelBtn" class="btn btn-secondary">Cancel</button>
+      <button id="confirmOkBtn" class="btn btn-primary">Confirm Vote</button>
+    </div>
+  </dialog>
+
+  <!-- Firebase Realtime Database (compat SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="constants.js"></script>
+  <script src="vote-script.js"></script>
+</body>
+</html>

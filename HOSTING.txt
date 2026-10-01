@@ -1,0 +1,89 @@
+FIREBASE HOSTING — DEPLOY & UNDEPLOY GUIDE
+==========================================
+Project: mecha-master-2026-voting
+Voter URL:  https://mecha-master-2026-voting.web.app/vote.html
+Admin URL:  https://mecha-master-2026-voting.web.app/vote-admin.html
+
+
+PRE-REQUISITES (one-time setup)
+--------------------------------
+1. Node.js must be installed (already done).
+2. Open a NEW PowerShell or Command Prompt window.
+3. Install Firebase CLI (only needed once):
+
+       npm install -g firebase-tools
+
+4. Log in to Firebase (only needed once, or when session expires):
+
+       firebase login
+
+   A browser window will open. Sign in with the Google account
+   linked to the Firebase project.
+
+   If the browser does not open automatically, use:
+
+       firebase login --no-localhost
+
+   Then open the URL shown in the terminal, sign in, and paste
+   the authorization code back into the terminal.
+
+
+DEPLOY (publish the site)
+--------------------------
+1. Open PowerShell or Command Prompt.
+2. Navigate to the Voting System folder:
+
+       cd "C:\Users\amostzew\Documents\Voting System"
+
+3. Deploy:
+
+       firebase deploy --only hosting
+
+4. When done, you will see:
+
+       Hosting URL: https://mecha-master-2026-voting.web.app
+
+   Share these links:
+     - Voters : https://mecha-master-2026-voting.web.app/vote.html
+     - Admin  : https://mecha-master-2026-voting.web.app/vote-admin.html
+
+
+UNDEPLOY (take the site offline)
+----------------------------------
+To disable the hosted site without deleting the project:
+
+   firebase hosting:disable
+
+   Visitors will see a "Site Not Found" page.
+
+To re-enable it later, just run deploy again:
+
+   firebase deploy --only hosting
+
+
+UPDATE THE SITE (after editing files)
+--------------------------------------
+1. Make your changes to any file in the Voting System folder.
+2. Run deploy again from the Voting System folder:
+
+       cd "C:\Users\amostzew\Documents\Voting System"
+       firebase deploy --only hosting
+
+   The live site updates within seconds.
+
+
+TROUBLESHOOTING
+----------------
+"Failed to authenticate" error
+   -> Run: firebase login
+   -> If browser does not open: firebase login --no-localhost
+
+"firebase is not recognized" error
+   -> Close and reopen PowerShell, then try again.
+   -> If still failing, run: npm install -g firebase-tools
+
+Check current login status:
+   firebase login:list
+
+Log out:
+   firebase logout
